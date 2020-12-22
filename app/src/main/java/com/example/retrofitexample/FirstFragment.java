@@ -14,6 +14,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +27,7 @@ import com.example.retrofitexample.api.DeezerApi;
 import com.example.retrofitexample.api.DeezerApiClient;
 import com.example.retrofitexample.model.Data;
 import com.example.retrofitexample.model.PlayList;
+import com.example.retrofitexample.viewmodel.FirstFragmentViewModel;
 
 import java.util.ArrayList;
 
@@ -33,12 +38,13 @@ import retrofit2.Response;
 public class FirstFragment extends Fragment {
 
     private EditText etPlayListId;
-    private DeezerApi deezerApi;
     private TextView tvTitle;
     private ImageView imageView;
     private RecyclerView trackList;
 
     private TrackAdapter trackAdapter;
+
+    private FirstFragmentViewModel firstFragmentViewModel;
 
     @Override
     public View onCreateView(
@@ -52,6 +58,23 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        firstFragmentViewModel = ViewModelProviders.of(this).get(FirstFragmentViewModel.class);
+
+        firstFragmentViewModel.getPlayListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PlayList>() {
+            @Override
+            public void onChanged(PlayList playList) {
+                displayData(playList);
+            }
+        });
+
+        view.findViewById(R.id.openSecondFragment).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NavHostFragment.findNavController(FirstFragment.this)
+                        .navigate(R.id.action_FirstFragment_to_SecondFragment);
+            }
+        });
+
         etPlayListId = (EditText) view.findViewById(R.id.etPlayListId);
         tvTitle = (TextView) view.findViewById(R.id.tvTitle);
         imageView = (ImageView) view.findViewById(R.id.imageView);
@@ -60,15 +83,13 @@ public class FirstFragment extends Fragment {
 
         trackList.setAdapter(trackAdapter);
 
-        deezerApi = DeezerApiClient.getDeezerApiInstance();
-
         etPlayListId.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if(actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT){
                     String id = etPlayListId.getText().toString();
                     if (id != null && !id.isEmpty()){
-                        searchPlayList(id);
+                        firstFragmentViewModel.searchPlayList(id);
                     }
                     else {
                         Toast.makeText(getActivity(), "Error", Toast.LENGTH_SHORT).show();
@@ -76,21 +97,6 @@ public class FirstFragment extends Fragment {
                     return true;
                 }
                 return false;
-            }
-        });
-    }
-
-    private void searchPlayList(String id) {
-        deezerApi.getAllPlayList(id).enqueue(new Callback<PlayList>() {
-            @Override
-            public void onResponse(Call<PlayList> call, Response<PlayList> response) {
-                Log.d("RetrofitResponse", "Success");
-                displayData(response.body());
-            }
-
-            @Override
-            public void onFailure(Call<PlayList> call, Throwable t) {
-                Toast.makeText(getActivity(), "Error", Toast.LENGTH_SHORT).show();
             }
         });
     }

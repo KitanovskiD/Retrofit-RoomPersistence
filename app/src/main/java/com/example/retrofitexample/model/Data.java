@@ -2,15 +2,22 @@ package com.example.retrofitexample.model;
 
 import android.media.MediaDrm;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import com.google.gson.annotations.SerializedName;
 
+@Entity
 public class Data {
+    @PrimaryKey
     @SerializedName("id")
     private long id;
     @SerializedName("title")
     private String title;
     @SerializedName("duration")
     private String duration;
+
+    private long playListId;
 
     public Data() {
     }
@@ -43,5 +50,13 @@ public class Data {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+
+    public long getPlayListId() {
+        return playListId;
+    }
+
+    public void setPlayListId(long playListId) {
+        this.playListId = playListId;
     }
 }

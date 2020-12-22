@@ -1,8 +1,14 @@
 package com.example.retrofitexample.model;
 
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
 import com.google.gson.annotations.SerializedName;
 
+@Entity
 public class PlayList {
+    @PrimaryKey
     @SerializedName("id")
     private long id;
     @SerializedName("title")
@@ -11,6 +17,8 @@ public class PlayList {
     private String description;
     @SerializedName("picture")
     private String picture;
+
+    @Ignore
     @SerializedName("tracks")
     private Track tracks;
 
